@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>QA Test Generator Agent</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+    :root {
+      --bg: #faf8f5;
+      --surface: #ffffff;
+      --surface2: #f5f2ee;
+      --border: #e8e2d9;
+      --accent: #c17b3f;
+      --accent-soft: rgba(193, 123, 63, 0.08);
+      --accent-hover: #a8682e;
+      --green: #3a7d52;
+      --green-soft: rgba(58, 125, 82, 0.08);
+      --red: #c0392b;
+      --red-soft: rgba(192, 57, 43, 0.08);
+      --yellow: #b7850a;
+      --yellow-soft: rgba(183, 133, 10, 0.1);
+      --text: #2c2416;
+      --text-muted: #7a6a55;
+      --text-dim: #b5a898;
+      --shadow: 0 1px 3px rgba(44,36,22,0.08);
+      --shadow-md: 0 4px 12px rgba(44,36,22,0.1);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      border-bottom: 1px solid var(--border);
+      padding: 16px 40px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+
+    .logo-icon {
+      width: 34px; height: 34px;
+      background: var(--accent);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      color: white; font-weight: 700; font-size: 14px; letter-spacing: -0.5px;
+    }
+
+    .logo-text h1 { font-size: 15px; font-weight: 600; letter-spacing: -0.3px; color: var(--text); }
+    .logo-text p { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+
+    .header-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+
+    .badge {
+      background: var(--green-soft);
+      border: 1px solid rgba(58,125,82,0.25);
+      color: var(--green);
+      font-size: 10px; font-weight: 600;
+      padding: 3px 10px; border-radius: 20px;
+      letter-spacing: 0.5px; text-transform: uppercase;
+    }
+
+    main {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      min-height: calc(100vh - 69px);
+    }
+
+    .left-panel {
+      border-right: 1px solid var(--border);
+      background: var(--surface);
+      display: flex; flex-direction: column;
+      padding: 24px; gap: 20px;
+      overflow-y: auto;
+    }
+
+    .section-label {
+      font-size: 10px; font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+
+    .mode-toggle {
+      display: grid; grid-template-columns: 1fr 1fr;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px; padding: 3px; gap: 3px;
+    }
+
+    .mode-btn {
+      padding: 8px; border: none; border-radius: 6px;
+      font-size: 12px; font-weight: 500;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer; transition: all 0.2s;
+      color: var(--text-muted); background: transparent;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+    }
+
+    .mode-btn.active { background: var(--accent); color: white; box-shadow: var(--shadow); }
+
+    .input-section { display: flex; flex-direction: column; gap: 10px; }
+
+    textarea {
+      width: 100%; height: 120px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px; padding: 12px;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px; color: var(--text);
+      resize: none; outline: none;
+      transition: border-color 0.2s; line-height: 1.6;
+    }
+
+    textarea::placeholder { color: var(--text-dim); }
+    textarea:focus { border-color: var(--accent); background: var(--surface); }
+
+    .drop-zone {
+      display: none; width: 100%; height: 120px;
+      border: 2px dashed var(--border); border-radius: 8px;
+      align-items: center; justify-content: center;
+      flex-direction: column; gap: 8px;
+      cursor: pointer; transition: all 0.2s;
+      background: var(--surface2);
+    }
+
+    .drop-zone.visible { display: flex; }
+    .drop-zone:hover, .drop-zone.dragover { border-color: var(--accent); background: var(--accent-soft); }
+    .drop-zone .drop-icon { font-size: 24px; opacity: 0.5; }
+    .drop-zone p { font-size: 13px; color: var(--text-muted); }
+    .drop-zone span { font-size: 11px; color: var(--text-dim); }
+
+    .image-preview {
+      display: none; position: relative;
+      border-radius: 8px; overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    .image-preview.visible { display: block; }
+    .image-preview img { width: 100%; height: 120px; object-fit: cover; display: block; }
+
+    .image-preview .remove-btn {
+      position: absolute; top: 8px; right: 8px;
+      background: rgba(255,255,255,0.9); border: 1px solid var(--border);
+      color: var(--text); width: 24px; height: 24px; border-radius: 50%;
+      cursor: pointer; font-size: 11px;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: var(--shadow);
+    }
+
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+
+    .chip {
+      padding: 5px 11px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 20px; font-size: 11px;
+      color: var(--text-muted); cursor: pointer;
+      transition: all 0.2s; font-family: 'Inter', sans-serif;
+    }
+
+    .chip:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+
+    .btn-row { display: flex; gap: 8px; margin-top: auto; }
+
+    .generate-btn {
+      flex: 1; padding: 12px;
+      background: var(--accent); border: none;
+      border-radius: 8px; color: white;
+      font-size: 13px; font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer; transition: all 0.2s;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .generate-btn:hover { background: var(--accent-hover); transform: translateY(-1px); box-shadow: var(--shadow-md); }
+    .generate-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    .stop-btn {
+      padding: 12px 16px;
+      background: var(--red-soft);
+      border: 1px solid rgba(192,57,43,0.25);
+      border-radius: 8px; color: var(--red);
+      font-size: 13px; font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer; transition: all 0.2s;
+      display: none; align-items: center; justify-content: center; gap: 6px;
+    }
+
+    .stop-btn:hover { background: rgba(192,57,43,0.15); }
+    .stop-btn.visible { display: flex; }
+
+    .spinner {
+      width: 14px; height: 14px;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: white; border-radius: 50%;
+      animation: spin 0.8s linear infinite; display: none;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .right-panel { background: var(--bg); display: flex; flex-direction: column; }
+
+    .output-header {
+      padding: 16px 28px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      background: var(--surface); box-shadow: var(--shadow);
+    }
+
+    .output-header h2 { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+
+    .output-actions { display: flex; gap: 8px; }
+
+    .action-btn {
+      padding: 6px 14px; background: var(--surface2);
+      border: 1px solid var(--border); border-radius: 6px;
+      color: var(--text-muted); font-size: 11px; font-weight: 500;
+      font-family: 'Inter', sans-serif; cursor: pointer;
+      transition: all 0.2s; display: none;
+    }
+
+    .action-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .action-btn.visible { display: block; }
+    .action-btn.green-btn:hover { border-color: var(--green); color: var(--green); }
+
+    .output-body { flex: 1; padding: 24px; overflow-y: auto; }
+
+    .empty-state {
+      height: 100%; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 12px; color: var(--text-dim);
+    }
+
+    .empty-state .empty-icon { font-size: 40px; opacity: 0.3; }
+    .empty-state h3 { font-size: 15px; color: var(--text-muted); font-weight: 500; }
+    .empty-state p { font-size: 12px; text-align: center; max-width: 260px; line-height: 1.6; color: var(--text-dim); }
+
+    .empty-tips { margin-top: 8px; display: flex; flex-direction: column; gap: 6px; width: 100%; max-width: 300px; }
+
+    .tip {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px; padding: 9px 13px;
+      font-size: 11px; color: var(--text-muted);
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    .output-content { display: none; }
+    .output-content.visible { display: block; }
+
+    .result-meta {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 16px; flex-wrap: wrap; gap: 10px;
+    }
+
+    .feature-tag {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--green-soft);
+      border: 1px solid rgba(58,125,82,0.2);
+      color: var(--green); font-size: 11px; font-weight: 500;
+      padding: 4px 12px; border-radius: 20px;
+    }
+
+    .stats-row { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    .stat {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px; padding: 4px 10px;
+      font-size: 11px; color: var(--text-muted);
+      box-shadow: var(--shadow);
+    }
+
+    .stat span { color: var(--accent); font-weight: 600; }
+
+    .table-wrapper {
+      overflow-x: auto; border-radius: 8px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      background: var(--surface);
+    }
+
+    table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 1000px; }
+
+    thead { background: var(--surface2); }
+
+    th {
+      padding: 10px 12px; text-align: left;
+      font-size: 10px; font-weight: 600;
+      color: var(--text-muted); text-transform: uppercase;
+      letter-spacing: 0.5px; border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text); line-height: 1.5; vertical-align: top;
+    }
+
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--surface2); }
+
+    .tc-id {
+      font-family: monospace;
+      font-size: 11px; color: var(--accent);
+      white-space: nowrap; font-weight: 600;
+    }
+
+    .priority-badge {
+      display: inline-block; padding: 2px 8px;
+      border-radius: 20px; font-size: 10px; font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .priority-critical { background: var(--red-soft); color: var(--red); }
+    .priority-high { background: var(--yellow-soft); color: var(--yellow); }
+    .priority-medium { background: var(--accent-soft); color: var(--accent); }
+    .priority-low { background: var(--surface2); color: var(--text-muted); }
+
+    /* Dropdown cells */
+    .dropdown-cell {
+      padding: 0 !important;
+    }
+
+    .cell-select {
+      width: 100%; height: 100%;
+      padding: 10px 8px;
+      border: none; outline: none;
+      background: transparent;
+      font-family: 'Inter', sans-serif;
+      font-size: 11px; color: var(--text);
+      cursor: pointer; appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%237a6a55' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 8px center;
+      padding-right: 24px;
+    }
+
+    .cell-select:focus { background-color: var(--accent-soft); }
+
+    .cell-select.type-positive { color: var(--green); }
+    .cell-select.type-negative { color: var(--red); }
+    .cell-select.type-edge { color: var(--yellow); }
+
+    .cell-select.status-not-executed { color: var(--text-muted); }
+    .cell-select.status-pass { color: var(--green); font-weight: 600; }
+    .cell-select.status-fail { color: var(--red); font-weight: 600; }
+    .cell-select.status-blocked { color: var(--yellow); }
+
+    .steps-list { padding-left: 0; list-style: none; display: flex; flex-direction: column; gap: 3px; }
+    .steps-list li { display: flex; gap: 6px; font-size: 11px; line-height: 1.5; }
+    .steps-list li::before { content: attr(data-num); color: var(--accent); font-weight: 600; flex-shrink: 0; min-width: 16px; }
+
+    .loading-state { display: none; flex-direction: column; gap: 14px; padding: 8px 0; }
+    .loading-state.visible { display: flex; }
+
+    .loading-text {
+      font-size: 13px; color: var(--text-muted);
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    .pulse {
+      width: 7px; height: 7px; background: var(--accent);
+      border-radius: 50%; animation: pulse 1s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.8); }
+    }
+
+    .loading-bar { height: 5px; background: var(--surface2); border-radius: 4px; overflow: hidden; border: 1px solid var(--border); }
+
+    .loading-bar-inner {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), #e8a96a);
+      border-radius: 4px;
+      animation: loading 1.5s ease-in-out infinite; width: 60%;
+    }
+
+    @keyframes loading {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(250%); }
+    }
+
+    .error-state {
+      display: none; padding: 14px;
+      background: var(--red-soft);
+      border: 1px solid rgba(192,57,43,0.2);
+      border-radius: 8px; color: var(--red);
+      font-size: 13px; gap: 8px; align-items: flex-start;
+    }
+
+    .error-state.visible { display: flex; }
+    input[type="file"] { display: none; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo-icon">QA</div>
+  <div class="logo-text">
+    <h1>QA Test Generator Agent</h1>
+    <p>Powered by Claude AI · Built by Grey</p>
+  </div>
+  <div class="header-right">
+    <span class="badge">Live</span>
+  </div>
+</header>
+
+<main>
+  <div class="left-panel">
+
+    <div>
+      <p class="section-label">Input Mode</p>
+      <div class="mode-toggle">
+        <button class="mode-btn active" id="textModeBtn" onclick="setMode('text')">Text</button>
+        <button class="mode-btn" id="imageModeBtn" onclick="setMode('image')">Image</button>
+      </div>
+    </div>
+
+    <div class="input-section">
+      <p class="section-label">Feature Description</p>
+      <textarea id="featureInput" placeholder="Describe the feature you want to test...&#10;&#10;e.g. Wallet top-up flow with debit card and bank transfer options"></textarea>
+
+      <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+        <div class="drop-icon">+</div>
+        <p>Drop your Figma screenshot here</p>
+        <span>or click to browse · PNG, JPG, WEBP</span>
+      </div>
+
+      <div class="image-preview" id="imagePreview">
+        <img id="previewImg" src="" alt="Preview" />
+        <button class="remove-btn" onclick="removeImage()">x</button>
+      </div>
+
+      <input type="file" id="fileInput" accept="image/*" onchange="handleFileSelect(event)" />
+    </div>
+
+    <div id="chipsSection">
+      <p class="section-label">Quick Examples</p>
+      <div class="chips">
+        <span class="chip" onclick="setFeature('User login with OTP verification')">OTP Login</span>
+        <span class="chip" onclick="setFeature('Wallet top-up with debit card and bank transfer')">Wallet Top-up</span>
+        <span class="chip" onclick="setFeature('KYC document upload and verification')">KYC Upload</span>
+        <span class="chip" onclick="setFeature('Fund transfer between accounts with PIN confirmation')">Fund Transfer</span>
+        <span class="chip" onclick="setFeature('Credit score lookup and report generation')">Credit Score</span>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="generate-btn" id="generateBtn" onclick="generate()">
+        <div class="spinner" id="spinner"></div>
+        <span id="btnText">Generate Test Cases</span>
+      </button>
+      <button class="stop-btn" id="stopBtn" onclick="stopGeneration()">Stop</button>
+    </div>
+
+  </div>
+
+  <div class="right-panel">
+    <div class="output-header">
+      <h2>Output</h2>
+      <div class="output-actions">
+        <a class="action-btn green-btn" id="sheetsBtn" target="_blank" style="text-decoration:none;display:none">Open in Sheets</a>
+        <button class="action-btn" id="copyCSVBtn" onclick="copyCSV()">Copy CSV</button>
+        <button class="action-btn" id="copyBtn" onclick="copyOutput()">Copy All</button>
+      </div>
+    </div>
+
+    <div class="output-body">
+
+      <div class="empty-state" id="emptyState">
+        <div class="empty-icon">[ ]</div>
+        <h3>No test cases yet</h3>
+        <p>Describe a feature or drop a Figma screenshot and click Generate.</p>
+        <div class="empty-tips">
+          <div class="tip">Text mode — describe any feature in plain English</div>
+          <div class="tip">Image mode — drop a Figma screenshot directly</div>
+          <div class="tip">Results export directly to Google Sheets</div>
+        </div>
+      </div>
+
+      <div class="loading-state" id="loadingState">
+        <div class="loading-text">
+          <div class="pulse"></div>
+          Agent is analyzing and generating test cases...
+        </div>
+        <div class="loading-bar"><div class="loading-bar-inner"></div></div>
+        <div class="loading-bar" style="width:75%"><div class="loading-bar-inner"></div></div>
+        <div class="loading-bar" style="width:50%"><div class="loading-bar-inner"></div></div>
+      </div>
+
+      <div class="error-state" id="errorState">
+        Error: <span id="errorMessage"></span>
+      </div>
+
+      <div class="output-content" id="outputContent">
+        <div class="result-meta">
+          <div class="feature-tag">
+            <span id="featureTag"></span>
+          </div>
+          <div class="stats-row" id="statsRow"></div>
+        </div>
+        <div class="table-wrapper">
+          <table id="resultTable">
+            <thead>
+              <tr>
+                <th>TC ID</th>
+                <th>Test Type</th>
+                <th>Module</th>
+                <th>Test Scenario</th>
+                <th>Preconditions</th>
+                <th>Steps</th>
+                <th>Test Data</th>
+                <th>Expected Result</th>
+                <th>Actual Result</th>
+                <th>Priority</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="resultBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<script>
+  let currentMode = 'text';
+  let selectedImageBase64 = null;
+  let selectedImageType = null;
+  let currentRequestId = null;
+  let rawCSV = '';
+
+  function setMode(mode) {
+    currentMode = mode;
+    document.getElementById('textModeBtn').classList.toggle('active', mode === 'text');
+    document.getElementById('imageModeBtn').classList.toggle('active', mode === 'image');
+    document.getElementById('featureInput').style.display = mode === 'text' ? 'block' : 'none';
+    document.getElementById('chipsSection').style.display = mode === 'text' ? 'block' : 'none';
+
+    const dropZone = document.getElementById('dropZone');
+    const imagePreview = document.getElementById('imagePreview');
+
+    if (mode === 'image') {
+      if (selectedImageBase64) {
+        dropZone.classList.remove('visible');
+        imagePreview.classList.add('visible');
+      } else {
+        dropZone.classList.add('visible');
+        imagePreview.classList.remove('visible');
+      }
+    } else {
+      dropZone.classList.remove('visible');
+      imagePreview.classList.remove('visible');
+    }
+  }
+
+  function setFeature(text) { document.getElementById('featureInput').value = text; }
+
+  function handleFileSelect(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    loadImage(file);
+  }
+
+  function loadImage(file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const result = e.target.result;
+      selectedImageBase64 = result.split(',')[1];
+      selectedImageType = file.type;
+      document.getElementById('previewImg').src = result;
+      document.getElementById('dropZone').classList.remove('visible');
+      document.getElementById('imagePreview').classList.add('visible');
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function removeImage() {
+    selectedImageBase64 = null; selectedImageType = null;
+    document.getElementById('fileInput').value = '';
+    document.getElementById('previewImg').src = '';
+    document.getElementById('imagePreview').classList.remove('visible');
+    document.getElementById('dropZone').classList.add('visible');
+  }
+
+  const dropZone = document.getElementById('dropZone');
+  dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+  dropZone.addEventListener('drop', (e) => {
+    e.preventDefault(); dropZone.classList.remove('dragover');
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) loadImage(file);
+  });
+
+  function setLoading(isLoading) {
+    document.getElementById('spinner').style.display = isLoading ? 'block' : 'none';
+    document.getElementById('btnText').textContent = isLoading ? 'Generating...' : 'Generate Test Cases';
+    document.getElementById('generateBtn').disabled = isLoading;
+    document.getElementById('stopBtn').classList.toggle('visible', isLoading);
+    document.getElementById('emptyState').style.display = 'none';
+    document.getElementById('loadingState').classList.toggle('visible', isLoading);
+    document.getElementById('outputContent').classList.toggle('visible', false);
+    document.getElementById('errorState').classList.toggle('visible', false);
+  }
+
+  function showError(msg) {
+    document.getElementById('loadingState').classList.remove('visible');
+    document.getElementById('errorState').classList.add('visible');
+    document.getElementById('errorMessage').textContent = msg;
+    document.getElementById('generateBtn').disabled = false;
+    document.getElementById('spinner').style.display = 'none';
+    document.getElementById('btnText').textContent = 'Generate Test Cases';
+    document.getElementById('stopBtn').classList.remove('visible');
+  }
+
+  function parseCSV(csv) {
+    const lines = csv.trim().split('\n');
+    const rows = [];
+    for (const line of lines) {
+      if (!line.trim()) continue;
+      const cols = [];
+      let current = ''; let inQuotes = false;
+      for (let i = 0; i < line.length; i++) {
+        const ch = line[i];
+        if (ch === '"') { inQuotes = !inQuotes; }
+        else if (ch === ',' && !inQuotes) { cols.push(current.trim()); current = ''; }
+        else { current += ch; }
+      }
+      cols.push(current.trim());
+      rows.push(cols);
+    }
+    return rows;
+  }
+
+  function getPriorityClass(priority) {
+    const p = (priority || '').toLowerCase();
+    if (p.includes('critical')) return 'priority-critical';
+    if (p.includes('high')) return 'priority-high';
+    if (p.includes('medium')) return 'priority-medium';
+    return 'priority-low';
+  }
+
+  function getTypeClass(type) {
+    const t = (type || '').toLowerCase();
+    if (t.includes('positive')) return 'type-positive';
+    if (t.includes('negative')) return 'type-negative';
+    if (t.includes('edge')) return 'type-edge';
+    return '';
+  }
+
+  function renderSteps(stepsText) {
+    const steps = stepsText.split(';').map(s => s.trim()).filter(Boolean);
+    if (steps.length <= 1) return `<span style="font-size:11px">${stepsText}</span>`;
+    return `<ol class="steps-list">${steps.map((s, i) => `<li data-num="${i+1}.">${s}</li>`).join('')}</ol>`;
+  }
+
+  function makeTypeDropdown(currentVal) {
+    const typeClass = getTypeClass(currentVal);
+    return `<select class="cell-select ${typeClass}" onchange="updateTypeStyle(this)">
+      <option value="Positive" ${currentVal === 'Positive' ? 'selected' : ''}>Positive</option>
+      <option value="Negative" ${currentVal === 'Negative' ? 'selected' : ''}>Negative</option>
+      <option value="Edge Case" ${currentVal === 'Edge Case' ? 'selected' : ''}>Edge Case</option>
+    </select>`;
+  }
+
+  function makeStatusDropdown(currentVal) {
+    const val = currentVal || 'Not Executed';
+    return `<select class="cell-select status-not-executed" onchange="updateStatusStyle(this)">
+      <option value="Not Executed" ${val === 'Not Executed' ? 'selected' : ''}>Not Executed</option>
+      <option value="Pass" ${val === 'Pass' ? 'selected' : ''}>Pass</option>
+      <option value="Fail" ${val === 'Fail' ? 'selected' : ''}>Fail</option>
+      <option value="Blocked" ${val === 'Blocked' ? 'selected' : ''}>Blocked</option>
+    </select>`;
+  }
+
+  function updateTypeStyle(select) {
+    select.className = 'cell-select ' + getTypeClass(select.value);
+  }
+
+  function updateStatusStyle(select) {
+    const v = select.value.toLowerCase().replace(' ', '-');
+    select.className = `cell-select status-${v}`;
+  }
+
+  function showResult(feature, csv, sheetUrl) {
+    rawCSV = csv;
+    const rows = parseCSV(csv);
+    const dataRows = rows.slice(1).filter(r => r.length >= 8);
+    const tbody = document.getElementById('resultBody');
+    tbody.innerHTML = '';
+
+    dataRows.forEach(cols => {
+      const [id, type, module, scenario, preconditions, steps, testData, expected, actual, priority, status] = cols;
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><span class="tc-id">${id || ''}</span></td>
+        <td class="dropdown-cell">${makeTypeDropdown(type || 'Positive')}</td>
+        <td>${module || ''}</td>
+        <td>${scenario || ''}</td>
+        <td>${preconditions || ''}</td>
+        <td>${renderSteps(steps || '')}</td>
+        <td>${testData || ''}</td>
+        <td>${expected || ''}</td>
+        <td>${actual || ''}</td>
+        <td><span class="priority-badge ${getPriorityClass(priority)}">${priority || ''}</span></td>
+        <td class="dropdown-cell">${makeStatusDropdown(status || 'Not Executed')}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    const positive = dataRows.filter(r => (r[1]||'').toLowerCase().includes('positive')).length;
+    const negative = dataRows.filter(r => (r[1]||'').toLowerCase().includes('negative')).length;
+    const edge = dataRows.filter(r => (r[1]||'').toLowerCase().includes('edge')).length;
+    const critical = dataRows.filter(r => (r[9]||'').toLowerCase().includes('critical')).length;
+
+    document.getElementById('statsRow').innerHTML = `
+      <div class="stat">Total <span>${dataRows.length}</span></div>
+      <div class="stat">Positive <span>${positive}</span></div>
+      <div class="stat">Negative <span>${negative}</span></div>
+      <div class="stat">Edge <span>${edge}</span></div>
+      <div class="stat">Critical <span>${critical}</span></div>
+    `;
+
+    document.getElementById('loadingState').classList.remove('visible');
+    document.getElementById('outputContent').classList.add('visible');
+    document.getElementById('featureTag').textContent = feature;
+    ['copyBtn', 'copyCSVBtn'].forEach(id => document.getElementById(id).classList.add('visible'));
+    const sheetsBtn = document.getElementById('sheetsBtn');
+    if (sheetUrl) {
+      sheetsBtn.href = sheetUrl;
+      sheetsBtn.style.display = 'block';
+    }
+  }
+
+  async function stopGeneration() {
+    if (currentRequestId) {
+      await fetch('http://localhost:3000/cancel', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ requestId: currentRequestId })
+      });
+      currentRequestId = null;
+    }
+    document.getElementById('loadingState').classList.remove('visible');
+    document.getElementById('emptyState').style.display = 'flex';
+    document.getElementById('generateBtn').disabled = false;
+    document.getElementById('spinner').style.display = 'none';
+    document.getElementById('btnText').textContent = 'Generate Test Cases';
+    document.getElementById('stopBtn').classList.remove('visible');
+  }
+
+  async function generate() {
+    if (currentMode === 'text') {
+      const feature = document.getElementById('featureInput').value.trim();
+      if (!feature) { alert('Please enter a feature description!'); return; }
+      setLoading(true);
+      currentRequestId = Date.now().toString();
+      try {
+        const result = await callServer('text', feature, null, null, currentRequestId);
+        showResult(feature, result.csv, result.sheetUrl);
+      } catch (err) {
+        if (err.message !== 'Request cancelled') showError(err.message);
+      } finally {
+        document.getElementById('stopBtn').classList.remove('visible');
+        document.getElementById('generateBtn').disabled = false;
+        document.getElementById('spinner').style.display = 'none';
+        document.getElementById('btnText').textContent = 'Generate Test Cases';
+      }
+    } else {
+      if (!selectedImageBase64) { alert('Please upload an image first!'); return; }
+      setLoading(true);
+      currentRequestId = Date.now().toString();
+      try {
+        const result = await callServer('image', null, selectedImageBase64, selectedImageType, currentRequestId);
+        showResult('UI Screenshot Analysis', result.csv, result.sheetUrl);
+      } catch (err) {
+        if (err.message !== 'Request cancelled') showError(err.message);
+      } finally {
+        document.getElementById('stopBtn').classList.remove('visible');
+        document.getElementById('generateBtn').disabled = false;
+        document.getElementById('spinner').style.display = 'none';
+        document.getElementById('btnText').textContent = 'Generate Test Cases';
+      }
+    }
+  }
+
+  async function callServer(mode, feature, imageBase64, mediaType, requestId) {
+    const response = await fetch('http://localhost:3000/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mode, feature, imageBase64, mediaType, requestId })
+    });
+    if (!response.ok) { const err = await response.json(); throw new Error(err.error || 'Server error'); }
+    const data = await response.json();
+    return { csv: data.result, sheetUrl: data.sheetUrl };
+  }
+
+  function copyOutput() {
+    const rows = document.querySelectorAll('#resultTable tr');
+    let text = '';
+    rows.forEach(row => {
+      const cells = row.querySelectorAll('th, td');
+      text += Array.from(cells).map(c => {
+        const sel = c.querySelector('select');
+        return sel ? sel.value : c.innerText;
+      }).join('\t') + '\n';
+    });
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.getElementById('copyBtn');
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = 'Copy All', 2000);
+    });
+  }
+
+  function copyCSV() {
+    navigator.clipboard.writeText(rawCSV).then(() => {
+      const btn = document.getElementById('copyCSVBtn');
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = 'Copy CSV', 2000);
+    });
+  }
+
+
+</script>
+
+</body>
+</html>
