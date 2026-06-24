@@ -2,7 +2,7 @@
 
 An AI-powered QA Test Generator Agent built with the Claude API. Accepts a feature description or UI screenshot (Figma, wireframe, design) and automatically generates structured test cases — then pushes them directly to a formatted Google Sheet.
 
----
+
 
 ## What It Does
 
@@ -13,7 +13,7 @@ An AI-powered QA Test Generator Agent built with the Claude API. Accepts a featu
 - Displays results in a clean table UI with dropdown selectors for Test Type and Status
 - Secure backend — API key never exposed to the browser
 
----
+
 
 ## Tech Stack
 
@@ -25,7 +25,7 @@ An AI-powered QA Test Generator Agent built with the Claude API. Accepts a featu
 | Frontend | HTML, CSS, Vanilla JavaScript |
 | Auth | Google OAuth2 with token persistence |
 
----
+
 
 ## Project Structure
 
@@ -43,7 +43,6 @@ qa-test-generator-agent/
 └── node_modules/
 ```
 
----
 
 ## Setup
 
@@ -84,8 +83,6 @@ node server.js
 
 Then open `http://localhost:3000/auth` in your browser and log in with your Google account. A `token.json` file will be saved automatically — you will not need to authenticate again.
 
----
-
 ## Running the Agent
 
 ### Web UI (recommended)
@@ -101,8 +98,6 @@ Open `http://localhost:3000` in your browser.
 ```bash
 node index.js
 ```
-
----
 
 ## How It Works
 
@@ -120,8 +115,6 @@ User inputs feature description or drops a UI screenshot
         "Open in Sheets" link appears with the live Google Sheet
 ```
 
----
-
 ## Features
 
 | Feature | Details |
@@ -135,8 +128,6 @@ User inputs feature description or drops a UI screenshot
 | Dropdown selectors | Test Type and Status are editable dropdowns |
 | Stats bar | Shows total, positive, negative, edge case, and critical counts |
 
----
-
 ## Security
 
 - `ANTHROPIC_API_KEY` is stored in `.env` and read server-side only
@@ -144,9 +135,7 @@ User inputs feature description or drops a UI screenshot
 - Google OAuth token stored locally in `token.json` (not committed to GitHub)
 - `.gitignore` excludes all sensitive files
 
----
-
 ## Author
 
 **Racheal Joshua**
-QA Engineering Intern | AI QA Engineer in progress
+QA Engineer Intern
