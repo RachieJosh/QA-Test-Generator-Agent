@@ -755,7 +755,7 @@
 
   async function stopGeneration() {
     if (currentRequestId) {
-      await fetch('http://localhost:3000/cancel', {
+      await fetch('/cancel', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ requestId: currentRequestId })
@@ -806,7 +806,7 @@
   }
 
   async function callServer(mode, feature, imageBase64, mediaType, requestId) {
-    const response = await fetch('http://localhost:3000/generate', {
+    const response = await fetch('/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ mode, feature, imageBase64, mediaType, requestId })
