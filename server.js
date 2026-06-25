@@ -27,11 +27,11 @@ function getOAuthClient() {
 }
 
 function getAuthenticatedClient() {
-  if (!fs.existsSync(TOKEN_PATH)) {
-    throw new Error('Not authenticated. Open http://localhost:3000/auth in your browser first.');
-  }
   const oauthClient = getOAuthClient();
-  oauthClient.setCredentials(JSON.parse(fs.readFileSync(TOKEN_PATH)));
+  const token = process.env.GOOGLE_TOKEN
+    ? JSON.parse(process.env.GOOGLE_TOKEN)
+    : JSON.parse(fs.readFileSync(TOKEN_PATH));
+  oauthClient.setCredentials(token);
   return oauthClient;
 }
 
