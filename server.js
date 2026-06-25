@@ -21,9 +21,11 @@ const TOKEN_PATH = './token.json';
 const FOLDER_ID = '1A3F7Ui81xWGRKHDTttzncAGIiClv9pJv';
 
 function getOAuthClient() {
-  const raw = JSON.parse(fs.readFileSync('./oauth-credentials.json'));
-  const creds = raw.web || raw.installed;
-  return new google.auth.OAuth2(creds.client_id, creds.client_secret, 'http://localhost:3000/auth/callback');
+  const creds = process.env.OAUTH_CREDENTIALS
+    ? JSON.parse(process.env.OAUTH_CREDENTIALS)
+    : JSON.parse(fs.readFileSync('./oauth-credentials.json'));
+  const { client_id, client_secret, redirect_uris } = creds.web;
+  return new google.auth.OAuth2(client_id, client_secret, redirect_uris[0]);
 }
 
 function getAuthenticatedClient() {
