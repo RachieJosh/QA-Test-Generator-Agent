@@ -138,4 +138,4 @@ User inputs feature description or drops a UI screenshot
 ## Author
 
 **Racheal Joshua**
-QA Engineer Intern
+QA Engineer
